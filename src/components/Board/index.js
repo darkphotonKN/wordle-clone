@@ -3,8 +3,9 @@ const GRID_HEIGHT = 6;
 const GRID_WIDTH = 5;
 
 const Board = () => {
-  const [grid, setGrid] = useState(null);
-  const [guessAttempt, setGuessAttempt] = useState('');
+  const [grid, setGrid] = useState(null); // grid state
+  const [guessAttempt, setGuessAttempt] = useState(''); // current player guess
+  const [stage, setStage] = useState(0); // stage the player is on
 
   useEffect(() => {
     // populate initial grid
@@ -15,16 +16,14 @@ const Board = () => {
         newGrid[row].push('');
       }
     }
-
     // initate the empty grid
     setGrid(newGrid);
   }, []);
 
   useEffect(() => {
-    let windowEventId;
     if (grid) {
       // bind global keypressa event listener
-      windowEventId = window.addEventListener('keydown', handleKeyPress);
+      window.addEventListener('keydown', handleKeyPress);
     }
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [grid]);
@@ -45,23 +44,28 @@ const Board = () => {
     // repopulate grid on current word guess attempt
     if (grid) {
       const newGrid = [...grid];
-      console.log('guessAttempt:', guessAttempt);
-      const newWord = guessAttempt.slice(0, 5);
-      console.log('newWord:', newWord);
-      const row = newWord.split('');
+      const row = guessAttempt.split('');
+      if (row.length === 5) {
+        // check if full submission of the word is a correct word
+        setGuessAttempt(''); // reset guess attempt
+        // upgrade to next level
+        setStage((prevStage) => prevStage + 1);
+      }
       if (row.length < 5) {
         const fillNo = 5 - row.length;
         for (let i = 0; i < fillNo; i++) {
           row.push('');
         }
       }
-      console.log('row:', row);
-      newGrid[0] = row;
+
+      newGrid[stage] = row;
       setGrid(newGrid);
     }
   }, [guessAttempt]);
 
   console.log('grid:', grid);
+  console.log('stage:', stage);
+  console.log('guessAttempt:', guessAttempt);
 
   return (
     <div className="board">
